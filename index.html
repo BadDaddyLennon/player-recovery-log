@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Player Recoveries Log</title>
+    <style>
+        /* --- MODERNIZED DARK THEME CSS --- */
+        
+        /* CSS Variables: High Contrast BLACK & YELLOW */
+        :root {
+            --primary-color: #FFCC00; /* Vibrant Yellow Accent */
+            --primary-dark: #FF9900; /* Darker Yellow for Hover */
+            --success-color: #28a745; /* Green (Keep for Add Button) */
+            --danger-color: #dc3545; /* Red (Keep for Delete/Warning) */
+            --background-color: #000000; /* Pure BLACK Page Background */
+            --card-background: #1C1C1C; /* Dark Grey Container Background */
+            --text-color: #E0E0E0; /* Light Grey Default Text */
+            --dark-contrast-text: #FFFFFF; /* White text on dark cards */
+            --border-color: #333333; /* Darker border for inputs/cards */
+            --table-row-even: #282828; /* Slightly lighter dark grey for table zebra-striping */
+            --shadow-dark: 0 6px 15px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px 15px;
+            background-color: var(--background-color);
+            color: var(--text-color); 
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 650px; /* Slightly wider container */
+            margin: 0 auto;
+        }
+        /* H1 Title Style */
+        h1 {
+            text-align: center;
+            color: var(--primary-color); /* Yellow Title */
+            margin-bottom: 5px; 
+            font-size: 2.2em;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.2); /* Subtle glow */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        /* Policy Text */
+        .policy-text {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 0.9em;
+            margin-bottom: 30px;
+            display: block;
+        }
+        h2 {
+            color: var(--primary-color); /* Yellow Subheading */
+            text-shadow: none;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        /* Card and Section Styling */
+        .form-group, .controls, #logTableContainer {
+            background: var(--card-background); /* Dark Grey Card */
+            padding: 30px;
+            border-radius: 12px; /* Smoother corners */
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-dark);
+            margin-bottom: 25px;
+        }
+
+        /* Controls Box Padding */
+        .controls {
+            padding: 20px 30px; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #searchBar {
+            order: -1; /* Place search bar first in flex container */
+        }
+
+        /* Form Elements */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1em;
+            color: var(--text-color); /* Light text on dark card */
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            color: var(--dark-contrast-text); 
+            background-color: var(--border-color); /* Dark input background */
+            transition: border-color 0.2s;
+            resize: vertical;
+        }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color); /* Yellow border on focus */
+            box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.3); /* Yellow glow on focus */
+            outline: none;
+        }
+
+        /* Buttons */
+        button {
+            width: 100%;
+            padding: 16px; /* Larger hit area */
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--card-background); /* Dark text on buttons */
+            margin-top: 5px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        button:active {
+            transform: scale(0.99);
+        }
+        #logForm button {
+            background-color: var(--success-color); 
+            color: white; /* White text on green button */
+        }
+        #logForm button:hover {
+            background-color: #1e8449; 
+        }
+        #downloadBtn {
+            background-color: var(--primary-color); /* Yellow Download button */
+            color: var(--card-background); /* Dark text on yellow button */
+        }
+        #downloadBtn:hover {
+            background-color: var(--primary-dark); 
+        }
+        #deleteAllBtn {
+            background-color: var(--danger-color);
+            color: white; /* White text on red button */
+        }
+        #deleteAllBtn:hover {
+            background-color: #a71d2a;
+        }
+
+        /* Warning Boxes */
+        #recoveryWarning {
+            color: var(--text-color) !important;
+            background-color: var(--danger-color);
+            border: 2px solid #a71d2a !important;
+        }
+        #overrideCheckContainer {
+            border: 2px solid var(--danger-color); 
+            background-color: rgba(220, 53, 69, 0.2);
+        }
+        #overrideCheckContainer label {
+            color: var(--danger-color); 
+        }
+        #overrideLimitCheck {
+            width: auto;
+            margin: 0;
+            vertical-align: middle;
+        }
+        #overrideCheckContainer label {
+            font-weight: bold;
+            display: inline;
+        }
+
+        /* Log Table Styling */
+        #logTableContainer h2 {
+            color: var(--primary-color); 
+        }
+        #recoveryLog {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #recoveryLog th, #recoveryLog td {
+            padding: 15px 12px;
+            text-align: left;
+            font-size: 0.9em;
+            color: var(--dark-contrast-text); 
+            border-bottom: 1px solid var(--border-color); /* Separator line */
+            white-space: pre-wrap; /* Allows line breaks for misc notes */
+        }
+        #recoveryLog th {
+            background-color: var(--primary-color); /* Yellow Header */
+            color: var(--card-background); /* Dark text on yellow */
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        #recoveryLog tbody tr {
+            background-color: var(--card-background);
+        }
+        #recoveryLog tbody tr:nth-child(even) {
+            background-color: var(--table-row-even); /* Dark grey zebra stripe */
+        }
+        #recoveryLog tbody tr:hover {
+             background-color: #333333; /* Slightly lighter on hover */
+        }
+        /* Style for the misc entry highlighting */
+        .misc-entry {
+             background-color: rgba(255, 204, 0, 0.15) !important; 
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Player Recovery Log</h1>
+    <span class="policy-text">(Log to be deleted on the last day of the month)</span>
+
+    <div class="form-group">
+        <form id="logForm">
+            <label for="player_name">Player Name</label>
+            <input type="text" id="player_name" name="player_name" placeholder="Enter player's name" required>
+
+            <label for="recovery_type">Recovery Type</label>
+            <select id="recovery_type" name="recovery_type" required onchange="handleRecoveryTypeChange(this.value)">
+                <option value="" disabled selected>Select a Recovery Option</option>
+                <option value="1st Recovery">1st Recovery</option>
+                <option value="2nd Recovery">2nd Recovery</option>
+                <option value="Paid Recovery">Paid Recovery</option>
+                <option value="Misc Recovery">Misc Recovery</option>
+            </select>
+            
+            <div id="recoveryWarning" style="display:none; color: white; background-color: var(--danger-color); padding: 10px; border-radius: 5px; margin-top: 10px; font-weight: bold; border: 2px solid #a71d2a;">
+                ⚠️ **2 FREE RECOVERIES A MONTH. ANY MORE ARE CHARGED AT 2K POINTS PER RECOVERY.**
+            </div>
+
+            <div id="overrideCheckContainer" style="display:none; margin: 15px 0; padding: 10px; border: 2px solid var(--danger-color); background-color: rgba(220, 53, 69, 0.2);">
+                <input type="checkbox" id="overrideLimitCheck" style="margin-right: 10px;">
+                <label for="overrideLimitCheck" style="font-weight: bold; color: var(--danger-color); display: inline;">Confirm limit reached, adding entry anyway.</label>
+            </div>
+            
+            <div id="miscExplanationContainer" style="display:none; margin-top: 15px;">
+                <label for="misc_explanation">Explanation for Misc Recovery</label>
+                <textarea id="misc_explanation" name="misc_explanation" rows="3" placeholder="Briefly explain the nature of this miscellaneous recovery (e.g., compensation, admin error correction, etc.)"></textarea>
+            </div>
+            
+            <button type="submit">Add Recovery Log</button>
+        </form>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="searchBar" onkeyup="filterLog()" placeholder="Search by name or type or note...">
+        
+        <button id="downloadBtn">Download Log (.txt)</button>
+        
+        <button id="deleteAllBtn">Delete All Entries (Password Protected)</button>
+    </div>
+    
+    <div id="logTableContainer">
+        <h2>Recent Entries</h2>
+        <table id="recoveryLog">
+            <thead>
+                <tr>
+                    <th>Date/Time</th>
+                    <th>Player Name</th>
+                    <th>Recovery Type</th>
+                </tr>
+            </thead>
+            <tbody id="logBody">
+                </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    // -------------------------------------------------------------
+    // *** JSONBIN.IO CONFIGURATION ***
+    // NOTE: This Master Key is exposed. Consider using a Read-Only key for load and a secure backend for saving.
+    const BIN_ID = "692839a4ae596e708f74181b"; 
+    const SECRET_KEY = "$2a$10$Y7RyMSyB.GU67ZJdEbqQuuwdj7UJhht8mdy.Ytjf1CJHThjMoj0SW"; 
+    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+    // -------------------------------------------------------------
+
+    const CLEAR_PASSWORD = 'legend'; 
+
+    const logForm = document.getElementById('logForm');
+    const logBody = document.getElementById('logBody');
+    const searchBar = document.getElementById('searchBar');
+    const downloadBtn = document.getElementById('downloadBtn'); 
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
+    const miscExplanationContainer = document.getElementById('miscExplanationContainer');
+    const miscExplanationInput = document.getElementById('misc_explanation');
+    
+    let logEntries = []; // GLOBAL ARRAY to hold data loaded from the server
+
+    // --- JSONBIN Functions: Load, Save, Clear ---
+    const PLACEHOLDER_ENTRY = {
+        timestamp: "PLACEHOLDER",
+        playerName: "IGNORE",
+        recoveryType: "IGNORE"
+    };
+
+    async function loadEntries() {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'GET',
+                headers: { 'X-Master-Key': SECRET_KEY }
+            });
+
+            if (!response.ok) {
+                const errorDetails = await response.text();
+                throw new Error(`Load Error! Status: ${response.status}. Details: ${errorDetails}`);
+            }
+            
+            const data = await response.json();
+            const records = data.record || data; 
+            
+            // Filter out the placeholder entry
+            logEntries = Array.isArray(records) ? records.filter(entry => entry.playerName !== "IGNORE") : [];
+
+            renderLog(logEntries); // Render the fetched data
+            console.log("Log loaded from server successfully.");
+
+        } catch (error) {
+            console.error("❌ ERROR: Could not load log from server. Ensure API_URL and SECRET_KEY are correct.", error);
+            alert("⚠️ Warning: Could not load log history from server. Check console for API error details.");
+            logEntries = [];
+            renderLog(logEntries); // Render empty log
+        }
+    }
+
+    async function saveEntries() {
+        // Send the entire array back to the server. If empty, send the placeholder.
+        let dataToSend = logEntries.length > 0 ? logEntries : [PLACEHOLDER_ENTRY];
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Master-Key': SECRET_KEY 
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            
+            if (!response.ok) {
+                const errorDetails = await response.text();
+                throw new Error(`Save Error! Status: ${response.status}. Details: ${errorDetails}`);
+            }
+            
+            console.log("Log saved to server successfully.");
+        } catch (error) {
+            console.error("❌ CRITICAL ERROR: Could not save log to server.", error);
+            alert("🚨 CRITICAL SAVE FAILURE: Log entry was NOT saved to the central server! Check console for authentication details.");
+        }
+    }
+
+    async function clearLog() {
+        const passwordAttempt = prompt("⚠️ WARNING: This will permanently delete ALL log entries from the SERVER. Please enter the password to confirm:");
+
+        if (passwordAttempt !== CLEAR_PASSWORD) {
+            alert("Invalid password. Log clear cancelled.");
+            return;
+        }
+
+        // Only send the placeholder entry to effectively clear the log
+        const dataToClear = [PLACEHOLDER_ENTRY];
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': SECRET_KEY },
+                body: JSON.stringify(dataToClear)
+            });
+
+            if (!response.ok) {
+                const errorDetails = await response.text();
+                throw new Error(`Clear Error! Status: ${response.status}. Details: ${errorDetails}`);
+            }
+
+            // SUCCESS: Log is cleared on the server.
+            logEntries = [];
+            
+            // Clear the display
+            renderLog(logEntries); 
+            alert("✅ Log has been successfully cleared from the server. Users should refresh their browser to see the empty log.");
+
+        } catch (error) {
+            console.error("❌ CLEAR ERROR: Could not clear log on server.", error);
+            // On failure, render the existing (old) logEntries array
+            renderLog(logEntries); 
+            alert("🚨 FATAL CLEAR FAILURE: Log could not be cleared on the central server! The local log still displays the old data.");
+        }
+    }
+
+
+    // --- Core Logic ---
+
+    // Centralized function to handle dropdown changes
+    window.handleRecoveryTypeChange = function(selectedValue) {
+        const warningBox = document.getElementById('recoveryWarning');
+        const overrideContainer = document.getElementById('overrideCheckContainer');
+        
+        // Reset visibility first
+        warningBox.style.display = 'none';
+        overrideContainer.style.display = 'none';
+        miscExplanationContainer.style.display = 'none';
+        miscExplanationInput.removeAttribute('required'); // Remove required constraint by default
+
+        // Show elements based on selection
+        if (selectedValue === 'Paid Recovery') {
+            warningBox.style.display = 'block';
+            overrideContainer.style.display = 'block';
+        } else if (selectedValue === 'Misc Recovery') {
+            miscExplanationContainer.style.display = 'block';
+            miscExplanationInput.setAttribute('required', 'required'); // Require explanation for misc
+        }
+    };
+
+
+    // 4. Render the log table (displays the data currently in logEntries)
+    function renderLog(data) {
+        const logBody = document.getElementById('logBody');
+        logBody.innerHTML = ''; 
+
+        if (data.length === 0) {
+            logBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">No recovery entries logged yet.</td></tr>';
+            return;
+        }
+
+        // Display the newest entries first by reversing the data clone
+        const reversedData = [...data].reverse(); 
+        
+        reversedData.forEach(entry => {
+            const row = logBody.insertRow();
+            
+            // Add custom class for styling if Misc Recovery
+            if (entry.recoveryType === 'Misc Recovery') {
+                 row.classList.add('misc-entry');
+            }
+
+            row.insertCell().textContent = entry.timestamp;
+            row.insertCell().textContent = entry.playerName;
+            
+            // Include misc explanation in the Recovery Type cell
+            let typeText = entry.recoveryType;
+            if (entry.miscExplanation) {
+                // Format for display in the table
+                typeText += `\n(Note: ${entry.miscExplanation})`;
+            }
+            row.insertCell().textContent = typeText;
+        });
+    }
+
+    // NEW FUNCTION: Checks if a specific recovery type (1st or 2nd) has already been logged by the player.
+    function hasSpecificRecoveryLogged(name, type) {
+        const normalizedName = name.trim().toUpperCase();
+        const normalizedType = type.trim().toUpperCase();
+        
+        // Only check 1st and 2nd recovery types
+        if (normalizedType !== '1ST RECOVERY' && normalizedType !== '2ND RECOVERY') {
+            return false;
+        }
+
+        let isLogged = false;
+        
+        logEntries.forEach(entry => {
+            if (entry.playerName.trim().toUpperCase() === normalizedName && 
+                entry.recoveryType.trim().toUpperCase() === normalizedType) {
+                isLogged = true;
+            }
+        });
+        
+        return isLogged;
+    }
+
+
+    // 5. Handle form submission (Log Recovery)
+    logForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const playerName = document.getElementById('player_name').value.trim();
+        let recoveryType = document.getElementById('recovery_type').value; 
+        const overrideCheckbox = document.getElementById('overrideLimitCheck');
+        let miscExplanation = ''; // Initialize miscExplanation
+
+        if (playerName && recoveryType) {
+            
+            // --- ENFORCEMENT LOGIC: Block duplicate free recoveries ---
+            if (recoveryType === '1st Recovery' || recoveryType === '2nd Recovery') {
+                if (hasSpecificRecoveryLogged(playerName, recoveryType)) {
+                    alert(`🛑 ENTRY BLOCKED: ${playerName} already has a log entry for "${recoveryType}".\n\nTo add any further recoveries, please select the "Paid Recovery" option.`);
+                    return; // BLOCK submission
+                }
+            }
+            
+            // --- PAID RECOVERY CONFIRMATION LOGIC ---
+            if (recoveryType === 'Paid Recovery') {
+                 if (!overrideCheckbox.checked) {
+                    alert("🛑 Please check the confirmation box to log a Paid Recovery.");
+                    return; // Block submission until confirmed
+                 }
+            }
+            
+            // --- MISC RECOVERY LOGIC (Collect Explanation) ---
+            if (recoveryType === 'Misc Recovery') {
+                miscExplanation = miscExplanationInput.value.trim();
+                // Validation handled by the 'required' attribute in HTML
+                if (!miscExplanation) {
+                     alert("🛑 Explanation is required for Misc Recovery.");
+                     return;
+                }
+            }
+            // --- END LOGIC ---
+
+            // Create new entry
+            const newEntry = {
+                timestamp: new Date().toLocaleString(),
+                playerName: playerName,
+                recoveryType: recoveryType,
+                miscExplanation: miscExplanation || undefined // Add explanation only if it exists
+            };
+            
+            // 1. Add new entry to the GLOBAL array
+            logEntries.push(newEntry);
+            
+            // 2. Render locally to show the user the update
+            renderLog(logEntries); 
+            
+            // 3. Save the entire array back to the server and wait
+            await saveEntries();
+
+            // Cleanup:
+            logForm.reset(); 
+            document.getElementById('recovery_type').value = ""; 
+            document.getElementById('recoveryWarning').style.display = 'none';
+            document.getElementById('overrideCheckContainer').style.display = 'none'; 
+            document.getElementById('overrideLimitCheck').checked = false; // Reset the checkbox
+            
+            // Cleanup new misc fields
+            miscExplanationContainer.style.display = 'none';
+            miscExplanationInput.removeAttribute('required');
+            
+        }
+    });
+
+    // 6. Search/Filter Functionality
+    window.filterLog = function() { 
+        const filter = searchBar.value.toUpperCase();
+        const rows = logBody.getElementsByTagName('tr');
+        
+        Array.from(rows).forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            let match = false;
+            
+            if (cells.length > 2) { 
+                const playerName = cells[1].textContent.toUpperCase();
+                const recoveryType = cells[2].textContent.toUpperCase();
+                
+                // Search against name, type, and the full content of the type cell (which includes the note)
+                if (playerName.includes(filter) || recoveryType.includes(filter)) {
+                    match = true;
+                }
+            } else if (cells.length === 1 && cells[0].textContent.includes('No recovery entries')) {
+                // Keep the "No entries" row visible if no filter is applied, hide otherwise
+                match = !filter; 
+            }
+            row.style.display = match ? "" : "none";
+        });
+    };
+
+    // 7. Download Log as Plain Text (.txt)
+    downloadBtn.addEventListener('click', function() {
+        // Use the global logEntries array
+        const log = logEntries.filter(entry => entry.playerName !== "IGNORE"); 
+        
+        if (log.length === 0) {
+            alert("The log is empty. Nothing to download.");
+            return;
+        }
+
+        // --- 1. Create Plain Text Content Array ---
+        let contentArray = [];
+        contentArray.push("--- Monthly Player Recoveries Log ---");
+        contentArray.push(`Generated: ${new Date().toLocaleString()}`);
+        contentArray.push(`Total Entries: ${log.length}`);
+        contentArray.push(""); 
+
+        // Reverse the log for newest entries first in the download file
+        const reversedLog = [...log].reverse(); 
+        
+        reversedLog.forEach((entry, index) => {
+            let entryText = `Entry #${reversedLog.length - index}\n` +
+                            `  Date/Time: ${entry.timestamp}\n` +
+                            `  Player:    ${entry.playerName}\n` +
+                            `  Recovery:  ${entry.recoveryType}`;
+            
+            // Add explanation to download if it exists
+            if (entry.miscExplanation) {
+                entryText += `\n  Misc Note: ${entry.miscExplanation.replace(/\n/g, ' ')}`; // Flatten newlines for TXT file
+            }
+            
+            entryText += "\n--------------------------------------";
+            
+            contentArray.push(entryText);
+        });
+
+        const textContent = contentArray.join('\n');
+
+        // --- 2. Initiate Download using Blob ---
+        const filename = `PlayerRecoveries_${new Date().toISOString().slice(0,10)}.txt`;
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    });
+
+    // 8. Delete All Entries (Password Protected)
+    deleteAllBtn.addEventListener('click', clearLog);
+
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', loadEntries); 
+</script>
+
+</body>
+</html>
